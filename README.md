@@ -18,18 +18,18 @@
 <a id="init"></a>
 ## Инициализация
 ```cpp
-GetVolt(r1, r2, calibration)//с указанием сопротивлений делителя напряжения и калибровочного значания
-GetVolt(calibration)        // с указанием только калибровочного значания без делителя напряжения
+GetVolt(r1, r2, calibration);//с указанием сопротивлений делителя напряжения и калибровочного значания
+GetVolt(calibration);        // с указанием только калибровочного значания без делителя напряжения
 ```
 **указывать в порядке верхнее плечо, нижнее плечо, калибровка**
 
 <a id="use"></a>
 ## Использование
 ```cpp
-float getVolt(inputVolt)                // получить напряжение
-float getRawVolt (inputVolt)            // получить напряжение без делителя
-void setParameters (r1, r2, calibration)// поменять параметры из программы
-void setParameters (calibration)
+float getVolt(inputVolt);                // получить напряжение
+float getRawVolt (inputVolt);            // получить напряжение без делителя
+void setParameters (r1, r2, calibration);// поменять параметры из программы
+void setParameters (calibration);
 ```
 
 <a id="example"></a>
