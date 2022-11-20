@@ -6,7 +6,8 @@
 	- получение напряжения
 	- возможность работы с делителем напряжения и без
 	- настройка сопротивления резисторов и параметра калибровки
-	- возможность изменения параметров из программы
+	- возможность изменения параметров из программы (только соответсвующими функциями)
+	- настройка разрядности АЦП микроконтроллера
 
 	MIT License
 
@@ -15,10 +16,19 @@
 	v1.1 - получение "сырых" 5 вольт (без делителя напряжения);
 	v1.2 - теперь калибровочное значение можно менять из программы;
 	v2.0 - полностью переработана структура программы, добавил функцию для изменения параметров из кода
-	облегчена работа с библиотекой, оптимизация. //18.11.22
+		облегчена работа с библиотекой, оптимизация. //18.11.22
+	v2.1 - исправил баг с неправильным выводом напряжения, сделал настройку разрядности АЦП микроконтроллера, 
+		оптимизация вычислений, Разбил библиотеку на 2 класса GetVolt и GetRawVolt, изменил название функции изменения параметров
+		для системы без делителя на setRawParameters. //20.11.22
 */
 
 #pragma once
+
+#define _bit_depth 1024.0
+
+#ifndef bit_depth
+#define bit_depth _bit_depth //можно указать свою разрядность АЦП
+#endif
 
 class GetVolt {
 	public:
@@ -26,39 +36,53 @@ class GetVolt {
 		GetVolt(float r1, float r2, float calibration) { 
 			setParameters(r1, r2, calibration);
 		}
-		
-		// конструктор для получения напряжения без делителя напряжения
-		GetVolt(float calibration) {
-			setParameters(calibration);
-		}
 
 		// функции установки параметров (можно вызывать из программы)
-		void setParameters (float r1, float r2, float calibration) { // сопротивления резисторов и праметр калибровки
-			_R = r2 / (r1 + r2);
-			_calibration = calibration;
+		// сопротивления резисторов и праметр калибровки (с делителем напряжения)
+		void setParameters (float r1, float r2, float calibration) {
+			_ratio = (calibration * (r1 + r2)) / (r2 * bit_depth);
 		}
 
-		void setParameters (float calibration) { // только параметр калибровки
-			_calibration = calibration;
-		}
-		
 		// возвращает напряжение
 		float getVolt(unsigned int inputVolt) {
 			float temp;
-			temp = inputVolt * _calibration / _R * 1024.0;
-			if (temp  < 0.1) return 0.0;
+			temp = float(inputVolt) * _ratio;
+			if (temp < 0.1) return 0.0;
 			return temp;
+		}
+
+
+
+	private:
+		float _ratio;
+};
+
+class GetRawVolt {
+	public:
+		// конструктор для получения напряжения без делителя напряжения
+		GetRawVolt(float calibration) {
+			setRawParameters(calibration);
+		}
+	
+		// только параметр калибровки (без делителя напряжения)
+		void setRawParameters (float calibration) {
+			_calibration = calibration / bit_depth;
 		}
 		
 		// возвращает напряжение без делителей
 		float getRawVolt (unsigned int inputRawVolt) {
 			float temp;
-			temp = inputRawVolt * _calibration / 1024.0;
+			temp = float(inputRawVolt) * _calibration;
 			if (temp < 0.1) return 0.0;
 			return temp;
 		}
-
 	private:
 		float _calibration;
-		float _R;
 };
+
+#define _4_bit 32.0
+#define _6_bit 64.0
+#define _8_bit 256.0
+#define _10_bit 1024.0
+#define _12_bit 4096.0
+#define _14_bit 16384.0
