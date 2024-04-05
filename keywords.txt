@@ -1,6 +1,3 @@
 GetVolt	KEYWORD1
-GetRawVolt	KEYWORD1
 getVolt	KEYWORD2
-getRawVolt	KEYWORD2
 setParameters	KEYWORD2
-setRawParameters	KEYWORD2

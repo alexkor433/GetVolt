@@ -12,77 +12,63 @@
 	MIT License
 
 	Версии:
-	v1.0 - релиз;
-	v1.1 - получение "сырых" 5 вольт (без делителя напряжения);
-	v1.2 - теперь калибровочное значение можно менять из программы;
-	v2.0 - полностью переработана структура программы, добавил функцию для изменения параметров из кода
+	v1.0 - Релиз;
+	v1.1 - Получение "сырых" 5 вольт (без делителя напряжения);
+	v1.2 - Теперь калибровочное значение можно менять из программы;
+	v2.0 - Полностью переработана структура программы, добавлена функция изменения параметров калибровки из кода
 		облегчена работа с библиотекой, оптимизация. //18.11.22
-	v2.1 - исправил баг с неправильным выводом напряжения, сделал настройку разрядности АЦП микроконтроллера, 
-		оптимизация вычислений, Разбил библиотеку на 2 класса GetVolt и GetRawVolt, изменил название функции изменения параметров
+	v2.1 - Исправлен баг с неправильным выводом напряжения, добавлена возможность настройки разрядности АЦП микроконтроллера, 
+		оптимизация вычислений; Разбиение библиотеки на 2 класса GetVolt и GetRawVolt, изменение названий функций калибровки параметров
 		для системы без делителя на setRawParameters. //20.11.22
+	v2.2 - Мелкие улучшения
+	v2.3 - Оптимизация (передача параметров функций по ссылке)// 28.01.24
+	v2.4 - Облегчена работа с библиотекаой, удаление избыточного класса GetRawVolt //5.04.24
 */
 
 #pragma once
 
-#define _bit_depth 1024.0
+#define _BIT_DEPTH 1024.0
 
-#ifndef bit_depth
-#define bit_depth _bit_depth //можно указать свою разрядность АЦП
+#ifndef BIT_DEPTH
+#define BIT_DEPTH _BIT_DEPTH //можно указать свою разрядность АЦП
 #endif
 
 class GetVolt {
 	public:
 		// конструктор для измерения напряжения с делителем напряжения и калибровочным параметром
-		GetVolt(float r1, float r2, float calibration) { 
+		GetVolt(const float& r1, const float& r2, const float& calibration) { 
 			setParameters(r1, r2, calibration);
+		}
+
+		GetVolt(const float& calibration) {
+			setParameters(calibration);
 		}
 
 		// функции установки параметров (можно вызывать из программы)
 		// сопротивления резисторов и праметр калибровки (с делителем напряжения)
-		void setParameters (float r1, float r2, float calibration) {
-			_ratio = (calibration * (r1 + r2)) / (r2 * bit_depth);
+		void setParameters (const float& r1, const float& r2, const float& calibration) {
+			_ratio = (calibration * (r1 + r2)) / (r2 * BIT_DEPTH);
+		}
+
+		void setParameters (const float& calibration) {
+			_ratio = calibration / BIT_DEPTH;
 		}
 
 		// возвращает напряжение
-		float getVolt(unsigned int inputVolt) {
+		float getVolt(const unsigned int& inputVolt) {
 			float temp;
 			temp = float(inputVolt) * _ratio;
 			if (temp < 0.1) return 0.0;
 			return temp;
 		}
 
-
-
 	private:
 		float _ratio;
 };
 
-class GetRawVolt {
-	public:
-		// конструктор для получения напряжения без делителя напряжения
-		GetRawVolt(float calibration) {
-			setRawParameters(calibration);
-		}
-	
-		// только параметр калибровки (без делителя напряжения)
-		void setRawParameters (float calibration) {
-			_calibration = calibration / bit_depth;
-		}
-		
-		// возвращает напряжение без делителей
-		float getRawVolt (unsigned int inputRawVolt) {
-			float temp;
-			temp = float(inputRawVolt) * _calibration;
-			if (temp < 0.1) return 0.0;
-			return temp;
-		}
-	private:
-		float _calibration;
-};
-
-#define _4_bit 32.0
-#define _6_bit 64.0
-#define _8_bit 256.0
-#define _10_bit 1024.0
-#define _12_bit 4096.0
-#define _14_bit 16384.0
+#define _4_BIT 32.0
+#define _6_BIT 64.0
+#define _8_BIT 256.0
+#define _10_BIT 1024.0
+#define _12_BIT 4096.0
+#define _14_BIT 16384.0
